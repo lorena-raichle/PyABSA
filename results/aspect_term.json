@@ -1,0 +1,280 @@
+[
+  {
+    "sentence": "The battery life on this laptop is abysmal , but its screen resolution is breathtaking .",
+    "extractions": [
+      {
+        "aspect": "battery life",
+        "sentiment": "Negative",
+        "confidence": 0.9942,
+        "position": [
+          1,
+          2
+        ]
+      },
+      {
+        "aspect": "screen resolution",
+        "sentiment": "Positive",
+        "confidence": 0.9829,
+        "position": [
+          11,
+          12
+        ]
+      }
+    ]
+  },
+  {
+    "sentence": "I found the customer service helpful , yet the wait time was infuriatingly long .",
+    "extractions": [
+      {
+        "aspect": "customer service",
+        "sentiment": "Positive",
+        "confidence": 0.9944,
+        "position": [
+          3,
+          4
+        ]
+      },
+      {
+        "aspect": "wait time",
+        "sentiment": "Negative",
+        "confidence": 0.9924,
+        "position": [
+          9,
+          10
+        ]
+      }
+    ]
+  },
+  {
+    "sentence": "Die Heizung war viel zu laut , aber das Frühstücksbuffet war hervorragend .",
+    "extractions": [
+      {
+        "aspect": "Heizung",
+        "sentiment": "Negative",
+        "confidence": 0.996,
+        "position": 1
+      },
+      {
+        "aspect": "Frühstücksbuffet",
+        "sentiment": "Positive",
+        "confidence": 0.8436,
+        "position": 9
+      }
+    ]
+  },
+  {
+    "sentence": "Der Flug war pünktlich , doch das Bordpersonal wirkte unmotiviert und kühl .",
+    "extractions": [
+      {
+        "aspect": "Flug",
+        "sentiment": "Positive",
+        "confidence": 0.991,
+        "position": 1
+      },
+      {
+        "aspect": "Bordpersonal",
+        "sentiment": "Negative",
+        "confidence": 0.9903,
+        "position": 7
+      }
+    ]
+  },
+  {
+    "sentence": "Le son de ces é couteurs est de qualit é , mais ils deviennent inconfortables au bout d ’ une heure .",
+    "extractions": [
+      {
+        "aspect": "son",
+        "sentiment": "Negative",
+        "confidence": 0.5627,
+        "position": 1
+      }
+    ]
+  },
+  {
+    "sentence": "J ’ ai ador é le design de la montre , cependant la pr é cision des capteurs laisse à d é sirer .",
+    "extractions": [
+      {
+        "aspect": "design",
+        "sentiment": "Positive",
+        "confidence": 0.9939,
+        "position": 6
+      },
+      {
+        "aspect": "capteurs",
+        "sentiment": "Negative",
+        "confidence": 0.9887,
+        "position": 17
+      }
+    ]
+  },
+  {
+    "sentence": "Il ristorante offre un ’ atmosfera accogliente , ma i prezzi sono esorbitanti .",
+    "extractions": [
+      {
+        "aspect": "ristorante",
+        "sentiment": "Positive",
+        "confidence": 0.9928,
+        "position": 1
+      },
+      {
+        "aspect": "atmosfera",
+        "sentiment": "Positive",
+        "confidence": 0.9911,
+        "position": 5
+      },
+      {
+        "aspect": "prezzi",
+        "sentiment": "Negative",
+        "confidence": 0.9902,
+        "position": 10
+      }
+    ]
+  },
+  {
+    "sentence": "La connessione Wi - Fi era stabile , tuttavia la velocità di download era deludente .",
+    "extractions": [
+      {
+        "aspect": "connessione",
+        "sentiment": "Positive",
+        "confidence": 0.9856,
+        "position": 1
+      },
+      {
+        "aspect": "- Fi",
+        "sentiment": "Positive",
+        "confidence": 0.9858,
+        "position": [
+          3,
+          4
+        ]
+      },
+      {
+        "aspect": "velocità",
+        "sentiment": "Negative",
+        "confidence": 0.9882,
+        "position": 10
+      }
+    ]
+  },
+  {
+    "sentence": "The app ’ s UI is slick and intuitive , although it occasionally crashes without warning .",
+    "extractions": [
+      {
+        "aspect": "UI",
+        "sentiment": "Positive",
+        "confidence": 0.8512,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "sentence": "Der Teppichboden ist weich und gemütlich , aber die Fenster isolieren kaum gegen Kälte .",
+    "extractions": [
+      {
+        "aspect": "Teppichboden",
+        "sentiment": "Positive",
+        "confidence": 0.9921,
+        "position": 1
+      },
+      {
+        "aspect": "Fenster",
+        "sentiment": "Negative",
+        "confidence": 0.9935,
+        "position": 9
+      }
+    ]
+  },
+  {
+    "sentence": "La caméra prend de superbes clichés la journée , mais souffre de bruit en basse lumière .",
+    "extractions": [
+      {
+        "aspect": "bruit",
+        "sentiment": "Negative",
+        "confidence": 0.9879,
+        "position": 12
+      }
+    ]
+  },
+  {
+    "sentence": "Il servizio navetta è puntuale , ma il veicolo era sporco e malandato .",
+    "extractions": [
+      {
+        "aspect": "servizio navetta",
+        "sentiment": "Positive",
+        "confidence": 0.9925,
+        "position": [
+          1,
+          2
+        ]
+      },
+      {
+        "aspect": "veicolo",
+        "sentiment": "Negative",
+        "confidence": 0.9935,
+        "position": 8
+      }
+    ]
+  },
+  {
+    "sentence": "The new feature is a game - changer — when it works , which isn ’ t always the case .",
+    "extractions": [
+      {
+        "aspect": "feature",
+        "sentiment": "Positive",
+        "confidence": 0.9631,
+        "position": 2
+      }
+    ]
+  },
+  {
+    "sentence": "J ’ ai aim é les couleurs vives de l ’ interface , toutefois les ic ô nes sont parfois trompeuses .",
+    "extractions": [
+      {
+        "aspect": "interface",
+        "sentiment": "Positive",
+        "confidence": 0.8788,
+        "position": 11
+      },
+      {
+        "aspect": "ic",
+        "sentiment": "Negative",
+        "confidence": 0.9783,
+        "position": 15
+      }
+    ]
+  },
+  {
+    "sentence": "Sono rimasto colpito dalla velocità del processore , ma la batteria si scarica troppo in fretta .",
+    "extractions": [
+      {
+        "aspect": "processore",
+        "sentiment": "Negative",
+        "confidence": 0.988,
+        "position": 6
+      },
+      {
+        "aspect": "batteria",
+        "sentiment": "Negative",
+        "confidence": 0.9955,
+        "position": 10
+      }
+    ]
+  },
+  {
+    "sentence": "Das Hotelzimmer war sauber und modern , allerdings mit einer nervigen Klimaanlage .",
+    "extractions": [
+      {
+        "aspect": "Hotelzimmer",
+        "sentiment": "Positive",
+        "confidence": 0.9851,
+        "position": 1
+      },
+      {
+        "aspect": "Klimaanlage",
+        "sentiment": "Negative",
+        "confidence": 0.9736,
+        "position": 11
+      }
+    ]
+  }
+]

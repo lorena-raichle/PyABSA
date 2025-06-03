@@ -1,0 +1,71 @@
+[
+  {
+    "sentence": "Die Toiletten waren schmutzig, aber das Ambiente ist nett!",
+    "extractions": [
+      {
+        "aspect": "Toiletten",
+        "opinion": "schmutzig,",
+        "sentiment": "Negative"
+      },
+      {
+        "aspect": "Toiletten",
+        "opinion": "nett!",
+        "sentiment": "Positive"
+      },
+      {
+        "aspect": "Ambiente",
+        "opinion": "schmutzig,",
+        "sentiment": "Negative"
+      },
+      {
+        "aspect": "Ambiente",
+        "opinion": "nett!",
+        "sentiment": "Positive"
+      }
+    ]
+  },
+  {
+    "sentence": "J'adore ce film, il est vraiment bien !",
+    "extractions": []
+  },
+  {
+    "sentence": "Il servizio era lento ma il cibo era ottimo.",
+    "extractions": [
+      {
+        "aspect": "servizio",
+        "opinion": "lento",
+        "sentiment": "Negative"
+      },
+      {
+        "aspect": "servizio",
+        "opinion": "ottimo.",
+        "sentiment": "Positive"
+      },
+      {
+        "aspect": "cibo",
+        "opinion": "lento",
+        "sentiment": "Negative"
+      },
+      {
+        "aspect": "cibo",
+        "opinion": "ottimo.",
+        "sentiment": "Positive"
+      }
+    ]
+  },
+  {
+    "sentence": "I love this movie, it is so great!",
+    "extractions": [
+      {
+        "aspect": "movie,",
+        "opinion": "love",
+        "sentiment": "Positive"
+      },
+      {
+        "aspect": "movie,",
+        "opinion": "great!",
+        "sentiment": "Positive"
+      }
+    ]
+  }
+]
