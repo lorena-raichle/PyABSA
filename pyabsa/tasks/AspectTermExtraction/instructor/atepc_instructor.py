@@ -264,39 +264,24 @@ class ATEPCTrainingInstructor(BaseTrainingInstructor):
             )
             self.warmup_scheduler = warmup.UntunedLinearWarmup(self.optimizer)
 
-        self.logger.info(
-            "***** Running training for {} *****".format(self.config.task_name)
-        )
+        self.logger.info("***** Running training for {} *****".format(self.config.task_name))
         self.logger.info("  Num examples = %d", len(self.train_set))
         self.logger.info("  Batch size = %d", self.config.batch_size)
         self.logger.info("  Num steps = %d", self.num_train_optimization_steps)
-        sum_loss = 0
-        sum_apc_test_acc = 0
-        sum_apc_test_f1 = 0
-        sum_ate_test_f1 = 0
-        self.config.max_test_metrics = {
-            "max_apc_test_acc": 0,
-            "max_apc_test_f1": 0,
-            "max_ate_test_f1": 0,
-        }
-        self.config.metrics_of_this_checkpoint = {
-            "apc_acc": 0,
-            "apc_f1": 0,
-            "ate_f1": 0,
-        }
+
         global_step = 0
-        save_path = "{0}/{1}_{2}".format(
-            self.config.model_path_to_save,
-            self.config.model_name,
-            self.config.dataset_name,
-        )
         for epoch in range(int(self.config.num_epoch)):
-            nb_tr_examples, nb_tr_steps = 0, 0
             iterator = tqdm.tqdm(self.train_dataloader)
-            description = "Epoch:{} | Loss:{}".format(epoch, 0)
+            description = f"Epoch:{epoch} | Loss: 0"
             patience -= 1
+
+            last_loss_apc = 0
+            last_loss_ate = 0
+            last_loss = 0
+
             for step, batch in enumerate(iterator):
                 self.model.train()
+                batch = [b.to(self.config.device) for b in batch]
                 (
                     input_ids_spc,
                     segment_ids,
@@ -308,15 +293,7 @@ class ATEPCTrainingInstructor(BaseTrainingInstructor):
                     lcf_cdm_vec,
                     lcf_cdw_vec,
                 ) = batch
-                input_ids_spc = input_ids_spc.to(self.config.device)
-                segment_ids = segment_ids.to(self.config.device)
-                input_mask = input_mask.to(self.config.device)
-                label_ids = label_ids.to(self.config.device)
-                polarity = polarity.to(self.config.device)
-                valid_ids = valid_ids.to(self.config.device)
-                l_mask = l_mask.to(self.config.device)
-                lcf_cdm_vec = lcf_cdm_vec.to(self.config.device)
-                lcf_cdw_vec = lcf_cdw_vec.to(self.config.device)
+
                 if self.config.use_amp:
                     with torch.cuda.amp.autocast():
                         loss_ate, loss_apc = self.model(
@@ -342,16 +319,19 @@ class ATEPCTrainingInstructor(BaseTrainingInstructor):
                         lcf_cdm_vec=lcf_cdm_vec,
                         lcf_cdw_vec=lcf_cdw_vec,
                     )
-                # for multi-gpu, average loss by gpu instance number
+
                 if self.config.auto_device == DeviceTypeOption.ALL_CUDA:
                     loss_ate, loss_apc = loss_ate.mean(), loss_apc.mean()
+
                 ate_loss_weight = self.config.args.get("ate_loss_weight", 1.0)
+                loss = loss_ate + ate_loss_weight * loss_apc
+                print(
+                    f"[Epoch {epoch} | Step {global_step}] APC Loss: {loss_apc.item():.4f} | ATE Loss: {loss_ate.item():.4f} | Total Loss: {loss.item():.4f}")
 
-                loss = (
-                    loss_ate + ate_loss_weight * loss_apc
-                )  # the optimal weight of loss may be different according to dataset
-
-                sum_loss += loss.item()
+                # Capture loss for logging
+                last_loss_apc = loss_apc.item()
+                last_loss_ate = loss_ate.item()
+                last_loss = loss.item()
 
                 losses.append(loss.item())
 
@@ -367,224 +347,36 @@ class ATEPCTrainingInstructor(BaseTrainingInstructor):
                     with self.warmup_scheduler.dampening():
                         self.lr_scheduler.step()
 
-                nb_tr_examples += input_ids_spc.size(0)
-                nb_tr_steps += 1
                 self.optimizer.zero_grad()
                 global_step += 1
-                global_step += 1
+
                 if global_step % self.config.log_step == 0:
-                    if self.test_dataloader and epoch >= self.config.evaluate_begin:
-                        if self.valid_set:
-                            apc_result, ate_result = self._evaluate_acc_f1(
-                                self.valid_dataloader
-                            )
-                        else:
-                            apc_result, ate_result = self._evaluate_acc_f1(
-                                self.test_dataloader
-                            )
-                        sum_apc_test_acc += apc_result["apc_test_acc"]
-                        sum_apc_test_f1 += apc_result["apc_test_f1"]
-                        sum_ate_test_f1 += ate_result
-                        self.config.metrics_of_this_checkpoint["apc_acc"] = apc_result[
-                            "apc_test_acc"
-                        ]
-                        self.config.metrics_of_this_checkpoint["apc_f1"] = apc_result[
-                            "apc_test_f1"
-                        ]
-                        self.config.metrics_of_this_checkpoint["ate_f1"] = ate_result
+                    iterator.set_postfix_str(f"Loss: {loss.item():.4f}")
 
-                        if (
-                            apc_result["apc_test_acc"]
-                            > self.config.max_test_metrics["max_apc_test_acc"]
-                            or apc_result["apc_test_f1"]
-                            > self.config.max_test_metrics["max_apc_test_f1"]
-                            or ate_result
-                            > self.config.max_test_metrics["max_ate_test_f1"]
-                        ):
-                            patience = self.config.patience - 1
-                            if (
-                                apc_result["apc_test_acc"]
-                                > self.config.max_test_metrics["max_apc_test_acc"]
-                            ):
-                                self.config.max_test_metrics[
-                                    "max_apc_test_acc"
-                                ] = apc_result["apc_test_acc"]
-                            if (
-                                apc_result["apc_test_f1"]
-                                > self.config.max_test_metrics["max_apc_test_f1"]
-                            ):
-                                self.config.max_test_metrics[
-                                    "max_apc_test_f1"
-                                ] = apc_result["apc_test_f1"]
-                            if (
-                                ate_result
-                                > self.config.max_test_metrics["max_ate_test_f1"]
-                            ):
-                                self.config.max_test_metrics[
-                                    "max_ate_test_f1"
-                                ] = ate_result
-
-                            if self.config.model_path_to_save:
-                                # if save_path:
-                                #     try:
-                                #         shutil.rmtree(save_path)
-                                #         # self.logger.info('Remove sub-self.configimal trained model:', save_path)
-                                #     except:
-                                #         self.logger.info('Can not remove sub-self.configimal trained model:', save_path)
-
-                                save_path = "{0}/{1}_{2}_{3}_apcacc_{4}_apcf1_{5}_atef1_{6}/".format(
-                                    self.config.model_path_to_save,
-                                    self.config.model_name,
-                                    self.config.dataset_name,
-                                    self.config.lcf,
-                                    round(apc_result["apc_test_acc"], 2),
-                                    round(apc_result["apc_test_f1"], 2),
-                                    round(ate_result, 2),
-                                )
-
-                                save_model(
-                                    self.config, self.model, self.tokenizer, save_path
-                                )
-
-                        current_apc_test_acc = apc_result["apc_test_acc"]
-                        current_apc_test_f1 = apc_result["apc_test_f1"]
-                        current_ate_test_f1 = round(ate_result, 2)
-
-                        description = "Epoch:{:>3d}| ".format(epoch)
-
-                        description += "loss_apc:{:>.4f} | loss_ate:{:>.4f} |".format(
-                            loss_apc.item(), loss_ate.item()
-                        )
-                        postfix = " APC_ACC: {:>.2f}(max:{:>.2f}) | APC_F1: {:>.2f}(max:{:>.2f}) | ".format(
-                            current_apc_test_acc,
-                            self.config.max_test_metrics["max_apc_test_acc"],
-                            current_apc_test_f1,
-                            self.config.max_test_metrics["max_apc_test_f1"],
-                        )
-                        postfix += "ATE_F1: {:>.2f}(max:{:>.2f})".format(
-                            current_ate_test_f1,
-                            self.config.max_test_metrics["max_ate_test_f1"],
-                        )
-                        iterator.set_postfix_str(postfix)
-
-                    elif self.config.save_mode and epoch >= self.config.evaluate_begin:
-                        save_model(
-                            self.config,
-                            self.model,
-                            self.tokenizer,
-                            save_path + "_{}/".format(loss.item()),
-                        )
-                else:
-                    if self.config.get("loss_display", "smooth") == "smooth":
-                        description = "Epoch:{:>3d} | Smooth Loss: {:>.4f}".format(
-                            epoch, round(np.nanmean(losses), 4)
-                        )
-                    else:
-                        description = "Epoch:{:>3d} | Batch Loss: {:>.4f}".format(
-                            epoch, round(loss.item(), 4)
-                        )
-                iterator.set_description(description)
+                iterator.set_description(f"Epoch:{epoch}")
                 iterator.refresh()
+
+            # Log losses after each epoch
+            self.logger.info(
+                f"Epoch: {epoch} | loss_apc: {last_loss_apc:.4f} | loss_ate: {last_loss_ate:.4f} | Total Loss: {last_loss:.4f}"
+            )
 
             if patience == 0:
                 break
 
-        apc_result, ate_result = self._evaluate_acc_f1(self.test_dataloader)
-
-        if self.valid_set and self.test_set:
-            self.config.MV.log_metric(
-                self.config.model_name
-                + "-"
-                + self.config.dataset_name
-                + "-"
-                + self.config.pretrained_bert,
-                "Test-APC-Acc",
-                apc_result["apc_test_acc"],
-            )
-            self.config.MV.log_metric(
-                self.config.model_name
-                + "-"
-                + self.config.dataset_name
-                + "-"
-                + self.config.pretrained_bert,
-                "Test-APC-F1",
-                apc_result["apc_test_f1"],
-            )
-            self.config.MV.log_metric(
-                self.config.model_name
-                + "-"
-                + self.config.dataset_name
-                + "-"
-                + self.config.pretrained_bert,
-                "Test-ATE-F1",
-                ate_result,
-            )
-
-        else:
-            self.config.MV.log_metric(
-                self.config.model_name
-                + "-"
-                + self.config.dataset_name
-                + "-"
-                + self.config.pretrained_bert,
-                "Max-APC-Test-Acc w/o Valid Set",
-                self.config.max_test_metrics["max_apc_test_acc"],
-            )
-            self.config.MV.log_metric(
-                self.config.model_name
-                + "-"
-                + self.config.dataset_name
-                + "-"
-                + self.config.pretrained_bert,
-                "Max-APC-Test-F1 w/o Valid Set",
-                self.config.max_test_metrics["max_apc_test_f1"],
-            )
-            self.config.MV.log_metric(
-                self.config.model_name
-                + "-"
-                + self.config.dataset_name
-                + "-"
-                + self.config.pretrained_bert,
-                "Max-ATE-Test-F1 w/o Valid Set",
-                self.config.max_test_metrics["max_ate_test_f1"],
-            )
-
-        self.logger.info(self.config.MV.summary(no_print=True))
-        # self.logger.info(self.config.MV.short_summary(no_print=True))
-
-        rolling_intv = 5
+        # Set smoothed final loss
         df = pandas.DataFrame(losses)
-        losses = list(
-            numpy.hstack(df.rolling(rolling_intv, min_periods=1).mean().values)
-        )
+        rolling_intv = 5
+        losses = list(numpy.hstack(df.rolling(rolling_intv, min_periods=1).mean().values))
         self.config.loss = losses[-1]
-        # self.config.loss = np.average(losses)
 
         print_args(self.config, self.logger)
-
-        # return the model paths of multiple trainer
-        # in case of loading the best model after trainer
-        if self.config.save_mode:
-            del self.train_dataloader
-            del self.test_dataloader
-            del self.model
-            cuda.empty_cache()
-            time.sleep(3)
-            return save_path
-        else:
-            # direct return model if do not evaluate
-            del self.train_dataloader
-            del self.test_dataloader
-            cuda.empty_cache()
-            time.sleep(3)
-            return (
-                self.model,
-                self.config,
-                self.tokenizer,
-                sum_apc_test_acc,
-                sum_apc_test_f1,
-                sum_ate_test_f1,
-            )
+        return (
+            self.model,
+            self.config,
+            self.tokenizer,
+            losses,
+        )
 
     def _k_fold_train_and_evaluate(self, criterion):
         pass

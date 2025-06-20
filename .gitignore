@@ -2,6 +2,10 @@
 *.cache
 *.dev.py
 *.mv
+
+data
+CODE_LR/trainingdata
+results/
 state_dict/
 integrated_datasets/
 source_datasets.backup/

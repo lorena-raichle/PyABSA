@@ -13,12 +13,12 @@ from contextlib import redirect_stdout, redirect_stderr
 import io
 
 
-df = pd.read_json(
-    "/Users/lorenaraichle/Developer/ABSA/PyABSA/data/google_reviews_26_may.json",
-    lines=True
+chunk_size = 10000
+reader = pd.read_json(
+    "/Users/lorenaraichle/Developer/ABSA/PyABSA/data/google_reviews_ALL_03june.json",
+    lines=True,
+    chunksize=chunk_size
 )
-
-df = df[:1000]
 
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 checkpoint_folder = os.path.expanduser(
@@ -78,7 +78,7 @@ out_df = pd.DataFrame(all_results)[
 ]
 df_final = pd.concat([df.reset_index(drop=True), out_df.drop(columns=['sentence'])], axis=1)
 df_final.to_csv(
-    "/Users/lorenaraichle/Developer/ABSA/PyABSA/results/atepc_batch_results_2.csv",
+    "/Users/lorenaraichle/Developer/ABSA/PyABSA/results/ate_batch_results_10_000.csv",
     index=False
 )
 
